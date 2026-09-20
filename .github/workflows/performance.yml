@@ -1,0 +1,44 @@
+name: Performance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  performance:
+    name: Soak tests and benchmarks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Configure
+        run: cmake --preset gcc-release-static -DEXTORA_BUILD_SOAK_TESTS=ON
+
+      - name: Build
+        run: cmake --build --preset gcc-release-static --parallel 4
+
+      - name: Run lifecycle soak test
+        env:
+          EXTORA_SOAK_ITERATIONS: 10000
+        run: ctest --test-dir build/gcc-release-static -L soak --output-on-failure
+
+      - name: Run benchmarks
+        run: >-
+          build/gcc-release-static/bin/ExtoraBenchmarkObjectStore
+          --benchmark_repetitions=5
+          --benchmark_report_aggregates_only=true
+
+      - name: Upload benchmark JSON
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: extora-benchmarks-${{ github.sha }}
+          path: build/gcc-release-static/benchmarks/ObjectStore/ExtoraBenchmarkObjectStore.json
+          if-no-files-found: error

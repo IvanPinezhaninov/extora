@@ -1,0 +1,49 @@
+#============================================================================
+#
+# Copyright (C) 2026 Ivan Pinezhaninov <ivan.pinezhaninov@gmail.com>
+#
+# This file is part of the extora which can be found at
+# https://github.com/IvanPinezhaninov/extora/.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+# THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#============================================================================
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+if(NOT TARGET Threads::Threads)
+  find_dependency(Threads REQUIRED)
+endif()
+
+if(@extora_sqlite_external@ AND NOT TARGET SQLite::SQLite3)
+  find_dependency(SQLite3 3.27.2)
+endif()
+
+if(@extora_xxhash_external@ AND
+   NOT TARGET xxHash::xxhash AND
+   NOT TARGET xxHash::xxhash_static)
+  find_dependency(xxHash 0.8.3 CONFIG)
+endif()
+
+if(@extora_install_asio_adapter@ AND
+   (NOT TARGET Boost::asio OR NOT TARGET Boost::system))
+  find_dependency(Boost @extora_boost_min_version@ COMPONENTS asio system)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/extoraTargets.cmake")
+
+if(TARGET extora::asio)
+  set_property(TARGET extora::asio APPEND PROPERTY INTERFACE_LINK_LIBRARIES Boost::asio Boost::system)
+endif()
+
+if(NOT TARGET extora::extora)
+  add_library(extora::extora ALIAS @extora_default_package_target@)
+endif()

@@ -1,0 +1,772 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": { "major": 3, "minor": 28, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/build/${presetName}/install",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+
+    {
+      "name": "developer",
+      "hidden": true,
+      "cacheVariables": {
+        "EXTORA_BUILD_BENCHMARKS": "ON",
+        "EXTORA_BUILD_EXAMPLES": "ON",
+        "EXTORA_BUILD_HTTP_SERVER_EXAMPLE": "ON",
+        "EXTORA_BUILD_ASIO_ADAPTER": "ON",
+        "EXTORA_BUILD_TESTS": "ON"
+      }
+    },
+
+    {
+      "name": "tests-only",
+      "hidden": true,
+      "cacheVariables": {
+        "EXTORA_BUILD_TESTS": "ON"
+      }
+    },
+
+    {
+      "name": "gcc",
+      "hidden": true,
+      "generator": "Ninja",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "environment": { "CC": "gcc", "CXX": "g++" }
+    },
+
+    {
+      "name": "clang",
+      "hidden": true,
+      "generator": "Ninja",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "environment": { "CC": "clang", "CXX": "clang++" }
+    },
+
+    {
+      "name": "msvc",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+
+    {
+      "name": "release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name": "relwithdebinfo",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+
+    {
+      "name": "static",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "OFF",
+        "EXTORA_BUILD_STATIC_AND_SHARED": "OFF"
+      }
+    },
+
+    {
+      "name": "shared",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON",
+        "EXTORA_BUILD_STATIC_AND_SHARED": "OFF"
+      }
+    },
+
+    {
+      "name": "static-and-shared",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "OFF",
+        "EXTORA_BUILD_STATIC_AND_SHARED": "ON"
+      }
+    },
+
+    {
+      "name": "gcc-debug-static",
+      "displayName": "GCC / Debug / Static",
+      "inherits": [ "base", "developer", "gcc", "debug", "static" ]
+    },
+
+    {
+      "name": "gcc-debug-shared",
+      "displayName": "GCC / Debug / Shared",
+      "inherits": [ "base", "developer", "gcc", "debug", "shared" ]
+    },
+
+    {
+      "name": "gcc-debug-static-and-shared",
+      "displayName": "GCC / Debug / Static and Shared",
+      "inherits": [ "base", "developer", "gcc", "debug", "static-and-shared" ]
+    },
+
+    {
+      "name": "gcc-release-static",
+      "displayName": "GCC / Release / Static",
+      "inherits": [ "base", "developer", "gcc", "release", "static" ]
+    },
+
+    {
+      "name": "gcc-release-shared",
+      "displayName": "GCC / Release / Shared",
+      "inherits": [ "base", "developer", "gcc", "release", "shared" ]
+    },
+
+    {
+      "name": "gcc-release-static-and-shared",
+      "displayName": "GCC / Release / Static and Shared",
+      "inherits": [ "base", "developer", "gcc", "release", "static-and-shared" ]
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-static",
+      "displayName": "GCC / RelWithDebInfo / Static",
+      "inherits": [ "base", "developer", "gcc", "relwithdebinfo", "static" ]
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-shared",
+      "displayName": "GCC / RelWithDebInfo / Shared",
+      "inherits": [ "base", "developer", "gcc", "relwithdebinfo", "shared" ]
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-static-and-shared",
+      "displayName": "GCC / RelWithDebInfo / Static and Shared",
+      "inherits": [ "base", "developer", "gcc", "relwithdebinfo", "static-and-shared" ]
+    },
+
+    {
+      "name": "clang-debug-static",
+      "displayName": "Clang / Debug / Static",
+      "inherits": [ "base", "developer", "clang", "debug", "static" ]
+    },
+
+    {
+      "name": "clang-debug-shared",
+      "displayName": "Clang / Debug / Shared",
+      "inherits": [ "base", "developer", "clang", "debug", "shared" ]
+    },
+
+    {
+      "name": "clang-debug-static-and-shared",
+      "displayName": "Clang / Debug / Static and Shared",
+      "inherits": [ "base", "developer", "clang", "debug", "static-and-shared" ]
+    },
+
+    {
+      "name": "clang-release-static",
+      "displayName": "Clang / Release / Static",
+      "inherits": [ "base", "developer", "clang", "release", "static" ]
+    },
+
+    {
+      "name": "clang-release-shared",
+      "displayName": "Clang / Release / Shared",
+      "inherits": [ "base", "developer", "clang", "release", "shared" ]
+    },
+
+    {
+      "name": "clang-release-static-and-shared",
+      "displayName": "Clang / Release / Static and Shared",
+      "inherits": [ "base", "developer", "clang", "release", "static-and-shared" ]
+    },
+
+    {
+      "name": "clang-relwithdebinfo-static",
+      "displayName": "Clang / RelWithDebInfo / Static",
+      "inherits": [ "base", "developer", "clang", "relwithdebinfo", "static" ]
+    },
+
+    {
+      "name": "clang-relwithdebinfo-shared",
+      "displayName": "Clang / RelWithDebInfo / Shared",
+      "inherits": [ "base", "developer", "clang", "relwithdebinfo", "shared" ]
+    },
+
+    {
+      "name": "clang-relwithdebinfo-static-and-shared",
+      "displayName": "Clang / RelWithDebInfo / Static and Shared",
+      "inherits": [ "base", "developer", "clang", "relwithdebinfo", "static-and-shared" ]
+    },
+
+    {
+      "name": "msvc-static",
+      "displayName": "MSVC / Static",
+      "inherits": [ "base", "developer", "msvc", "static" ]
+    },
+
+    {
+      "name": "msvc-shared",
+      "displayName": "MSVC / Shared",
+      "inherits": [ "base", "developer", "msvc", "shared" ]
+    },
+
+    {
+      "name": "msvc-static-and-shared",
+      "displayName": "MSVC / Static and Shared",
+      "inherits": [ "base", "developer", "msvc", "static-and-shared" ]
+    },
+
+    {
+      "name": "gcc-debug-static-coverage",
+      "displayName": "GCC / Debug / Static / Coverage",
+      "inherits": [ "base", "tests-only", "gcc", "debug", "static" ],
+      "cacheVariables": {
+        "EXTORA_ENABLE_COVERAGE": "ON"
+      }
+    },
+
+    {
+      "name": "clang-debug-static-asan-ubsan",
+      "displayName": "Clang / Debug / Static / ASan and UBSan",
+      "inherits": [ "base", "developer", "clang", "debug", "static" ],
+      "cacheVariables": {
+        "EXTORA_ENABLE_SANITIZERS": "ON"
+      }
+    },
+
+    {
+      "name": "clang-debug-shared-asan-ubsan",
+      "displayName": "Clang / Debug / Shared / ASan and UBSan",
+      "inherits": [ "base", "developer", "clang", "debug", "shared" ],
+      "cacheVariables": {
+        "EXTORA_ENABLE_SANITIZERS": "ON"
+      }
+    },
+
+    {
+      "name": "clang-debug-static-tsan",
+      "displayName": "Clang / Debug / Static / ThreadSanitizer",
+      "inherits": [ "base", "developer", "clang", "debug", "static" ],
+      "cacheVariables": {
+        "EXTORA_ENABLE_THREAD_SANITIZER": "ON"
+      }
+    },
+
+    {
+      "name": "clang-debug-shared-tsan",
+      "displayName": "Clang / Debug / Shared / ThreadSanitizer",
+      "inherits": [ "base", "developer", "clang", "debug", "shared" ],
+      "cacheVariables": {
+        "EXTORA_ENABLE_THREAD_SANITIZER": "ON"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "gcc-debug-static",
+      "configurePreset": "gcc-debug-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-debug-shared",
+      "configurePreset": "gcc-debug-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-debug-static-and-shared",
+      "configurePreset": "gcc-debug-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-release-static",
+      "configurePreset": "gcc-release-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-release-shared",
+      "configurePreset": "gcc-release-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-release-static-and-shared",
+      "configurePreset": "gcc-release-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-static",
+      "configurePreset": "gcc-relwithdebinfo-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-shared",
+      "configurePreset": "gcc-relwithdebinfo-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-static-and-shared",
+      "configurePreset": "gcc-relwithdebinfo-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static",
+      "configurePreset": "clang-debug-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-shared",
+      "configurePreset": "clang-debug-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static-and-shared",
+      "configurePreset": "clang-debug-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-release-static",
+      "configurePreset": "clang-release-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-release-shared",
+      "configurePreset": "clang-release-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-release-static-and-shared",
+      "configurePreset": "clang-release-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-relwithdebinfo-static",
+      "configurePreset": "clang-relwithdebinfo-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-relwithdebinfo-shared",
+      "configurePreset": "clang-relwithdebinfo-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-relwithdebinfo-static-and-shared",
+      "configurePreset": "clang-relwithdebinfo-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-debug-static",
+      "configurePreset": "msvc-static",
+      "configuration": "Debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-debug-shared",
+      "configurePreset": "msvc-shared",
+      "configuration": "Debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-debug-static-and-shared",
+      "configurePreset": "msvc-static-and-shared",
+      "configuration": "Debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-release-static",
+      "configurePreset": "msvc-static",
+      "configuration": "Release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-release-shared",
+      "configurePreset": "msvc-shared",
+      "configuration": "Release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-release-static-and-shared",
+      "configurePreset": "msvc-static-and-shared",
+      "configuration": "Release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-relwithdebinfo-static",
+      "configurePreset": "msvc-static",
+      "configuration": "RelWithDebInfo",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-relwithdebinfo-shared",
+      "configurePreset": "msvc-shared",
+      "configuration": "RelWithDebInfo",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-relwithdebinfo-static-and-shared",
+      "configurePreset": "msvc-static-and-shared",
+      "configuration": "RelWithDebInfo",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-debug-static-coverage",
+      "configurePreset": "gcc-debug-static-coverage",
+      "targets": [ "ExtoraCoverage" ],
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static-asan-ubsan",
+      "configurePreset": "clang-debug-static-asan-ubsan",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-shared-asan-ubsan",
+      "configurePreset": "clang-debug-shared-asan-ubsan",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static-tsan",
+      "configurePreset": "clang-debug-static-tsan",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-shared-tsan",
+      "configurePreset": "clang-debug-shared-tsan",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+
+    {
+      "name": "gcc-debug-static",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-debug-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-debug-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-debug-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-debug-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-debug-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-release-static",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-release-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-release-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-release-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-release-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-release-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-static",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-relwithdebinfo-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-relwithdebinfo-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-relwithdebinfo-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-relwithdebinfo-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-release-static",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-release-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-release-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-release-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-release-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-release-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-relwithdebinfo-static",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-relwithdebinfo-static",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-relwithdebinfo-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-relwithdebinfo-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-relwithdebinfo-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-relwithdebinfo-static-and-shared",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-debug-static",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-static",
+      "configuration": "Debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-debug-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-shared",
+      "configuration": "Debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-debug-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-static-and-shared",
+      "configuration": "Debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-release-static",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-static",
+      "configuration": "Release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-release-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-shared",
+      "configuration": "Release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-release-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-static-and-shared",
+      "configuration": "Release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-relwithdebinfo-static",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-static",
+      "configuration": "RelWithDebInfo",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-relwithdebinfo-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-shared",
+      "configuration": "RelWithDebInfo",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "msvc-relwithdebinfo-static-and-shared",
+      "inherits": [ "base" ],
+      "configurePreset": "msvc-static-and-shared",
+      "configuration": "RelWithDebInfo",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "gcc-debug-static-coverage",
+      "inherits": [ "base" ],
+      "configurePreset": "gcc-debug-static-coverage",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static-asan-ubsan",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-static-asan-ubsan",
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      },
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-shared-asan-ubsan",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-shared-asan-ubsan",
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      },
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-static-tsan",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-static-tsan",
+      "environment": {
+        "TSAN_OPTIONS": "halt_on_error=1"
+      },
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+
+    {
+      "name": "clang-debug-shared-tsan",
+      "inherits": [ "base" ],
+      "configurePreset": "clang-debug-shared-tsan",
+      "environment": {
+        "TSAN_OPTIONS": "halt_on_error=1"
+      },
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    }
+  ],
+
+  "packagePresets": [
+    {
+      "name": "gcc-release-static",
+      "configurePreset": "gcc-release-static",
+      "generators": [ "TGZ", "ZIP", "DEB", "RPM" ]
+    },
+
+    {
+      "name": "gcc-release-shared",
+      "configurePreset": "gcc-release-shared",
+      "generators": [ "TGZ", "ZIP", "DEB", "RPM" ]
+    },
+
+    {
+      "name": "clang-release-static",
+      "configurePreset": "clang-release-static",
+      "generators": [ "TGZ", "ZIP" ]
+    },
+
+    {
+      "name": "clang-release-shared",
+      "configurePreset": "clang-release-shared",
+      "generators": [ "TGZ", "ZIP" ]
+    }
+  ]
+}

@@ -1,0 +1,807 @@
+{
+  "info": {
+    "_postman_id": "2bd625c1-cb97-4c16-9153-18883f805ea7",
+    "name": "Extora HTTP Example",
+    "description": "A guided, self-contained workflow for the Extora HTTP example. Start the server with an empty storage directory, then click the numbered folders and requests from top to bottom. Request bodies are generated or embedded in the collection; no local files are required. The incorrect-checksum request is expected to fail with checksum_mismatch. Every other request should succeed and saves any identifier required by later requests in collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Server",
+      "description": "Verify that the demo server is running before changing storage.",
+      "item": [
+        {
+          "name": "Root documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/"
+          }
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/_extora/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Bucket setup",
+      "description": "Create the sample bucket and enable versioning before uploading any objects.",
+      "item": [
+        {
+          "name": "Create bucket",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}"
+          }
+        },
+        {
+          "name": "Head bucket",
+          "request": {
+            "method": "HEAD",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}"
+          }
+        },
+        {
+          "name": "Enable versioning",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?versioning=enabled"
+          }
+        },
+        {
+          "name": "Get versioning status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?versioning"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Objects",
+      "description": "Create and read self-contained sample objects. Run every request in order; the checksum rejection is intentionally unsuccessful.",
+      "item": [
+        {
+          "name": "Upload sample text",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const versionId = pm.response.headers.get(\"X-Extora-Version-Id\");",
+                  "if (versionId) pm.collectionVariables.set(\"version_id\", versionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain; charset=utf-8"
+              },
+              {
+                "key": "X-Extora-Meta-Owner",
+                "value": "Alice"
+              },
+              {
+                "key": "X-Extora-Meta-Project",
+                "value": "Extora"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "Hello from Postman.\n",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": "{{base_url}}/{{bucket}}/{{key}}"
+          }
+        },
+        {
+          "name": "Upload sample binary",
+          "description": "Uploads an embedded payload under samples/files/ and saves its version ID. No local file selection is required.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const versionId = pm.response.headers.get(\"X-Extora-Version-Id\");",
+                  "if (versionId) pm.collectionVariables.set(\"file_version_id\", versionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              },
+              {
+                "key": "X-Extora-Meta-Owner",
+                "value": "Alice"
+              },
+              {
+                "key": "X-Extora-Meta-Project",
+                "value": "Extora"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "Sample binary payload from Postman.\n",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": "{{base_url}}/{{bucket}}/{{file_key}}"
+          }
+        },
+        {
+          "name": "Reject sample binary with an incorrect xxh3-128 checksum",
+          "description": "Expected result: HTTP 400 with checksum_mismatch. The failed request must not replace the existing sample binary.",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              },
+              {
+                "key": "X-Extora-Checksum-Algorithm",
+                "value": "xxh3-128"
+              },
+              {
+                "key": "X-Extora-Checksum",
+                "value": "00000000000000000000000000000000"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "Corrupted replacement payload from Postman.\n",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": "{{base_url}}/{{bucket}}/{{file_key}}"
+          }
+        },
+        {
+          "name": "Download latest object",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}"
+          }
+        },
+        {
+          "name": "Head latest object",
+          "request": {
+            "method": "HEAD",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}"
+          }
+        },
+        {
+          "name": "Download byte range",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Range",
+                "value": "bytes=0-9"
+              }
+            ],
+            "url": "{{base_url}}/{{bucket}}/{{key}}"
+          }
+        },
+        {
+          "name": "Download specific version",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}?version-id={{version_id}}"
+          }
+        },
+        {
+          "name": "Head specific version",
+          "request": {
+            "method": "HEAD",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}?version-id={{version_id}}"
+          }
+        },
+        {
+          "name": "Copy latest object",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const versionId = pm.response.headers.get(\"X-Extora-Version-Id\");",
+                  "if (versionId) pm.collectionVariables.set(\"copy_version_id\", versionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Extora-Copy-Source",
+                "value": "/{{bucket}}/{{key}}"
+              }
+            ],
+            "url": "{{base_url}}/{{bucket}}/{{copy_key}}"
+          }
+        },
+        {
+          "name": "Copy version and replace metadata",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Extora-Copy-Source",
+                "value": "/{{bucket}}/{{key}}?version-id={{version_id}}"
+              },
+              {
+                "key": "X-Extora-Metadata-Directive",
+                "value": "Replace"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              },
+              {
+                "key": "X-Extora-Meta-Owner",
+                "value": "Alice"
+              },
+              {
+                "key": "X-Extora-Meta-Project",
+                "value": "Extora"
+              }
+            ],
+            "url": "{{base_url}}/{{bucket}}/{{copy_key}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const versionId = pm.response.headers.get(\"X-Extora-Version-Id\");",
+                  "if (versionId) pm.collectionVariables.set(\"replacement_copy_version_id\", versionId);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Multipart",
+      "description": "Run in order. The first part is generated at the default minimum size of 5 MiB, the final part is embedded, and identifiers are propagated automatically.",
+      "item": [
+        {
+          "name": "Start multipart upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const result = pm.response.json();",
+                  "  if (result.upload_id) pm.collectionVariables.set(\"upload_id\", result.upload_id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              },
+              {
+                "key": "X-Extora-Meta-Owner",
+                "value": "Alice"
+              },
+              {
+                "key": "X-Extora-Meta-Project",
+                "value": "Extora"
+              },
+              {
+                "key": "X-Extora-Checksum-Algorithm",
+                "value": "xxh3-128"
+              },
+              {
+                "key": "X-Extora-Checksum-Type",
+                "value": "full_object"
+              }
+            ],
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?uploads"
+          }
+        },
+        {
+          "name": "List active multipart uploads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?uploads&max-uploads=100"
+          },
+          "description": "Run after starting the multipart upload and before completing it; the response contains the active upload."
+        },
+        {
+          "name": "Upload part 1",
+          "description": "Generates and uploads a 5 MiB first part, satisfying the server's default minimum multipart part size.",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"multipart_part_1_body\", \"A\".repeat(5 * 1024 * 1024));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"part_1_etag\", etag.replace(/\"/g, \"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{multipart_part_1_body}}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?part-number=1&upload-id={{upload_id}}"
+          }
+        },
+        {
+          "name": "Upload part 2",
+          "description": "Uploads an embedded final part.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"part_2_etag\", etag.replace(/\"/g, \"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "Second multipart part.\n",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?part-number=2&upload-id={{upload_id}}"
+          }
+        },
+        {
+          "name": "List uploaded parts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?upload-id={{upload_id}}&max-parts=100"
+          }
+        },
+        {
+          "name": "Copy source bytes into part 3",
+          "description": "This optional request copies the first byte of the source object. The sample completion request intentionally selects only parts 1 and 2.",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Extora-Copy-Source",
+                "value": "/{{bucket}}/{{key}}"
+              },
+              {
+                "key": "X-Extora-Copy-Source-Range",
+                "value": "bytes=0-0"
+              }
+            ],
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?part-number=3&upload-id={{upload_id}}"
+          }
+        },
+        {
+          "name": "Complete multipart upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const versionId = pm.response.headers.get(\"X-Extora-Version-Id\");",
+                  "if (versionId) pm.collectionVariables.set(\"multipart_version_id\", versionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parts\": [\n    {\"part_number\": 1, \"etag\": \"{{part_1_etag}}\"},\n    {\"part_number\": 2, \"etag\": \"{{part_2_etag}}\"}\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?upload-id={{upload_id}}"
+          }
+        },
+        {
+          "name": "List completed object parts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?object-parts&max-parts=100"
+          }
+        },
+        {
+          "name": "Start multipart upload to abort",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const result = pm.response.json();",
+                  "  if (result.upload_id) pm.collectionVariables.set(\"abort_upload_id\", result.upload_id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              }
+            ],
+            "url": "{{base_url}}/{{bucket}}/{{abort_key}}?uploads"
+          }
+        },
+        {
+          "name": "Abort multipart upload",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{abort_key}}?upload-id={{abort_upload_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Listings and administration",
+      "description": "Inspect the populated store. Prefix and delimiter listing now returns both objects and common prefixes.",
+      "item": [
+        {
+          "name": "List buckets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/_extora/buckets?max-buckets=100"
+          },
+          "description": "Returns the bucket created during setup."
+        },
+        {
+          "name": "List objects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?max-keys=100"
+          },
+          "description": "Returns the objects created by the preceding object and multipart workflows."
+        },
+        {
+          "name": "List objects by prefix and delimiter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?prefix=samples%2F&delimiter=%2F&max-keys=100"
+          },
+          "description": "Returns objects directly under samples/ and the samples/files/ and samples/uploads/ common prefixes."
+        },
+        {
+          "name": "List object versions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?versions&max-keys=100"
+          },
+          "description": "Returns every retained version created by the preceding workflows."
+        },
+        {
+          "name": "Get bucket usage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/_extora/buckets/{{bucket}}/usage"
+          },
+          "description": "Returns non-zero usage after the object and multipart workflows."
+        },
+        {
+          "name": "Get reclamation estimate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/_extora/reclamation"
+          },
+          "description": "The rejected checksum upload can leave reclaimable storage, so this request may report a non-zero estimate."
+        },
+        {
+          "name": "Reclaim storage",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/_extora/reclamation"
+          },
+          "description": "Reclaims any abandoned or garbage extents without deleting live objects."
+        },
+        {
+          "name": "Compact storage",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/_extora/compaction"
+          },
+          "description": "Compacts fragmented live object extents while the storage remains available for reads and writes, and reports payload movement and released segment storage."
+        }
+      ]
+    },
+    {
+      "name": "6. Cleanup",
+      "description": "Remove every generated version and upload in order, suspend versioning, and finally delete the empty bucket.",
+      "item": [
+        {
+          "name": "Delete latest text object and create a delete marker",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}"
+          },
+          "description": "Creates a delete marker because versioning is enabled and saves its version ID for the next cleanup request.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const versionId = pm.response.headers.get(\"X-Extora-Version-Id\");",
+                  "if (versionId) pm.collectionVariables.set(\"delete_marker_version_id\", versionId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete text object delete marker",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}?version-id={{delete_marker_version_id}}"
+          },
+          "description": "Deletes the marker created by the preceding request and exposes the original text version again."
+        },
+        {
+          "name": "Delete original text version",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{key}}?version-id={{version_id}}"
+          },
+          "description": "Deletes the original uploaded text version."
+        },
+        {
+          "name": "Delete sample binary version",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{file_key}}?version-id={{file_version_id}}"
+          },
+          "description": "Deletes the uploaded sample binary."
+        },
+        {
+          "name": "Delete replacement copy version",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{copy_key}}?version-id={{replacement_copy_version_id}}"
+          },
+          "description": "Deletes the newer copied version and promotes the earlier copy."
+        },
+        {
+          "name": "Delete original copy version",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{copy_key}}?version-id={{copy_version_id}}"
+          },
+          "description": "Deletes the earlier copied version."
+        },
+        {
+          "name": "Delete completed multipart version",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}/{{multipart_key}}?version-id={{multipart_version_id}}"
+          },
+          "description": "Deletes the object produced by multipart completion."
+        },
+        {
+          "name": "Suspend versioning",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}?versioning=suspended"
+          },
+          "description": "Demonstrates the suspended state after all versioned objects have been removed."
+        },
+        {
+          "name": "Delete empty bucket",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/{{bucket}}"
+          },
+          "description": "Succeeds after every preceding cleanup request has removed its object version or multipart upload."
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8080",
+      "type": "string"
+    },
+    {
+      "key": "bucket",
+      "value": "example-bucket",
+      "type": "string"
+    },
+    {
+      "key": "key",
+      "value": "samples/hello.txt",
+      "type": "string"
+    },
+    {
+      "key": "file_key",
+      "value": "samples/files/sample.bin",
+      "type": "string"
+    },
+    {
+      "key": "copy_key",
+      "value": "samples/hello-copy.txt",
+      "type": "string"
+    },
+    {
+      "key": "multipart_key",
+      "value": "samples/uploads/sample-multipart.bin",
+      "type": "string"
+    },
+    {
+      "key": "abort_key",
+      "value": "samples/uploads/sample-abort.bin",
+      "type": "string"
+    },
+    {
+      "key": "version_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "file_version_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "copy_version_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "upload_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "part_1_etag",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "part_2_etag",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "multipart_version_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "abort_upload_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "replacement_copy_version_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "delete_marker_version_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
